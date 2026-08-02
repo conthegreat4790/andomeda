@@ -1,7 +1,9 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
 {
+<<<<<<< Updated upstream
     public Camera mainMenuCamera;
     public Camera mainCamera;
     bool isMenuActive = true;
@@ -39,7 +41,18 @@ public class MainMenu : MonoBehaviour
         Cursor.visible = true;
         isMenuActive = true;
     }
+=======
+    public GameObject pauseMenu;
+    public bool isMenuActive;
+    public Image mainMenuBackground;
+>>>>>>> Stashed changes
 
+    void Start()
+    {
+        isMenuActive = false;
+        pauseMenu.SetActive(false);
+        mainMenuBackground.enabled = false;
+    }
     void Update()
     {
         if (!enabled || mainMenuCamera == null || mainCamera == null) return;
@@ -49,15 +62,26 @@ public class MainMenu : MonoBehaviour
             isMenuActive = !isMenuActive;
             if (isMenuActive)
             {
+<<<<<<< Updated upstream
                 mainMenuCamera.enabled = true;
                 mainCamera.enabled = false;
                 Cursor.visible = true;
+=======
+                CursorLockManager.UnlockCursor();
+                pauseMenu.SetActive(false);
+                mainMenuBackground.enabled = true;
+>>>>>>> Stashed changes
             }
             else
             {
                 mainMenuCamera.enabled = false;
                 mainCamera.enabled = true;
                 Cursor.visible = false;
+<<<<<<< Updated upstream
+=======
+                pauseMenu.SetActive(true);
+                mainMenuBackground.enabled = false;
+>>>>>>> Stashed changes
             }
         }
     }
