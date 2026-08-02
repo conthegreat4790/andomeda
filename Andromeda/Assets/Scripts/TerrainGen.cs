@@ -7,19 +7,20 @@ public class CustomMeshTerrain : MonoBehaviour
     public bool autoUpdate = true;
     public int seed = 42;
 
-    [Header("Base Grid Settings")]
-    [Range(2, 1500)]
-    public int baseWidth = 30;  // Base grid width
-    [Range(2, 1500)]
-    public int baseLength = 30; // Base grid length
-    public float cellSize = 1f;
-
-    [Header("Subdivision & Displacement")]
-    [Tooltip("Subdivides each quad twice (4x4 sub-quads per base quad).")]
-    public bool applyDoubleSubdivision = true;
-    [Tooltip("If checked, Y displacement is handled by your Shader Material instead of vertex position.")]
-    public bool materialHandlesDisplacement = true;
+    [Header("Mesh Dimensions (Grid Size)")]
+    [Range(2, 250)]
+    public int width = 100; // Number of vertices on X axis
+    [Range(2, 250)]
+    public int length = 100; // Number of vertices on Z axis
+    public float cellSize = 1f; // Spacing between vertices
     public float heightMultiplier = 25f;
+
+    [Header("Texture / UV Settings")]
+    [Tooltip("If true, UVs are generated based on actual 3D surface distance to eliminate texture stretching on steep slopes.")]
+    public bool autoCorrectStretching = true;
+
+    [Tooltip("Texture tiling multiplier. Try values between 0.05 and 0.5 when auto-correction is enabled.")]
+    public float uvScale = 0.1f;
 
     [Header("Base Perlin Noise Dials")]
     [Range(0.001f, 100f)]
@@ -81,13 +82,7 @@ public class CustomMeshTerrain : MonoBehaviour
     private Mesh CreateTerrainMesh()
     {
         Mesh mesh = new Mesh();
-        mesh.name = "Subdivided Displacement Mesh";
-
-        // Calculate resolution based on subdivision
-        int subdivisionFactor = applyDoubleSubdivision ? 4 : 1;
-        int width = (baseWidth - 1) * subdivisionFactor + 1;
-        int length = (baseLength - 1) * subdivisionFactor + 1;
-        float adjustedCellSize = cellSize / subdivisionFactor;
+        mesh.name = "Custom Terrain Mesh";
 
         if (width * length > 65000)
         {
@@ -113,63 +108,111 @@ public class CustomMeshTerrain : MonoBehaviour
         Vector2 elevationOffset = new Vector2(prng.Next(-100000, 100000), prng.Next(-100000, 100000)) + offset;
         Vector2 flattenOffset = new Vector2(prng.Next(-100000, 100000), prng.Next(-100000, 100000)) + offset;
 
-        // 1. Generate Vertices using World Coordinates (Fixes noise artifacts)
+        // 1. Generate Vertices
         for (int z = 0; z < length; z++)
         {
             for (int x = 0; x < width; x++)
             {
                 int i = z * width + x;
 
-                float worldX = x * adjustedCellSize;
-                float worldZ = z * adjustedCellSize;
+                float worldX = x * cellSize;
+                float worldZ = z * cellSize;
 
-                float yHeight = 0f;
+                float amplitude = 1;
+                float frequency = 1;
+                float baseNoise = 0;
+                float maxPossibleHeight = 0;
 
-                if (!materialHandlesDisplacement)
+                for (int o = 0; o < octaves; o++)
                 {
-                    float amplitude = 1;
-                    float frequency = 1;
-                    float baseNoise = 0;
-                    float maxPossibleHeight = 0;
+                    float sampleX = (worldX / scale) * frequency + octaveOffsets[o].x;
+                    float sampleY = (worldZ / scale) * frequency + octaveOffsets[o].y;
 
-                    // Base Noise sampled via World Space
-                    for (int o = 0; o < octaves; o++)
-                    {
-                        float sampleX = (worldX / scale) * frequency + octaveOffsets[o].x;
-                        float sampleY = (worldZ / scale) * frequency + octaveOffsets[o].y;
+                    float perlinValue = Mathf.PerlinNoise(sampleX, sampleY);
+                    baseNoise += perlinValue * amplitude;
 
-                        float perlinValue = Mathf.PerlinNoise(sampleX, sampleY);
-                        baseNoise += perlinValue * amplitude;
-
-                        maxPossibleHeight += amplitude;
-                        amplitude *= persistence;
-                        frequency *= lacunarity;
-                    }
-
-                    float normalizedBase = Mathf.Clamp01(baseNoise / maxPossibleHeight);
-
-                    // Flatten Mask sampled via World Space
-                    float flattenSampleX = (worldX * flattenFrequency) + flattenOffset.x;
-                    float flattenSampleY = (worldZ * flattenFrequency) + flattenOffset.y;
-                    float flattenMask = Mathf.PerlinNoise(flattenSampleX, flattenSampleY);
-                    float flattenedBase = Mathf.Lerp(normalizedBase, 0f, flattenMask * flattenAmount);
-
-                    // Elevation Mask sampled via World Space
-                    float elevSampleX = (worldX * elevationFrequency) + elevationOffset.x;
-                    float elevSampleY = (worldZ * elevationFrequency) + elevationOffset.y;
-                    float elevationMask = Mathf.PerlinNoise(elevSampleX, elevSampleY);
-
-                    float finalNormalizedHeight = Mathf.Clamp01(flattenedBase + (elevationMask * elevationStrength));
-                    yHeight = heightCurve.Evaluate(finalNormalizedHeight) * heightMultiplier;
+                    maxPossibleHeight += amplitude;
+                    amplitude *= persistence;
+                    frequency *= lacunarity;
                 }
 
+                float normalizedBase = Mathf.Clamp01(baseNoise / maxPossibleHeight);
+
+                // Flatten Mask
+                float flattenSampleX = (worldX * flattenFrequency) + flattenOffset.x;
+                float flattenSampleY = (worldZ * flattenFrequency) + flattenOffset.y;
+                float flattenMask = Mathf.PerlinNoise(flattenSampleX, flattenSampleY);
+                float flattenedBase = Mathf.Lerp(normalizedBase, 0f, flattenMask * flattenAmount);
+
+                // Elevation Mask
+                float elevSampleX = (worldX * elevationFrequency) + elevationOffset.x;
+                float elevSampleY = (worldZ * elevationFrequency) + elevationOffset.y;
+                float elevationMask = Mathf.PerlinNoise(elevSampleX, elevSampleY);
+
+                float finalNormalizedHeight = Mathf.Clamp01(flattenedBase + (elevationMask * elevationStrength));
+                float yHeight = heightCurve.Evaluate(finalNormalizedHeight) * heightMultiplier;
+
                 vertices[i] = new Vector3(worldX, yHeight, worldZ);
-                uvs[i] = new Vector2((float)x / (width - 1), (float)z / (length - 1));
                 tangents[i] = new Vector4(1f, 0f, 0f, -1f);
             }
         }
 
-        // 2. Build Alternating Triangles (Eliminates diagonal shading seams)
+        // 2. Generate Stretch-Free UVs
+        if (autoCorrectStretching)
+        {
+            float[,] uDistances = new float[width, length];
+            float[,] vDistances = new float[width, length];
+
+            // Accumulate 3D physical distance along X rows
+            for (int z = 0; z < length; z++)
+            {
+                uDistances[0, z] = 0f;
+                for (int x = 1; x < width; x++)
+                {
+                    int currIndex = z * width + x;
+                    int prevIndex = z * width + (x - 1);
+                    float dist = Vector3.Distance(vertices[currIndex], vertices[prevIndex]);
+                    uDistances[x, z] = uDistances[x - 1, z] + dist;
+                }
+            }
+
+            // Accumulate 3D physical distance along Z columns
+            for (int x = 0; x < width; x++)
+            {
+                vDistances[x, 0] = 0f;
+                for (int z = 1; z < length; z++)
+                {
+                    int currIndex = z * width + x;
+                    int prevIndex = (z - 1) * width + x;
+                    float dist = Vector3.Distance(vertices[currIndex], vertices[prevIndex]);
+                    vDistances[x, z] = vDistances[x, z - 1] + dist;
+                }
+            }
+
+            // Assign UVs scaled by physical 3D distance
+            for (int z = 0; z < length; z++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int i = z * width + x;
+                    uvs[i] = new Vector2(uDistances[x, z] * uvScale, vDistances[x, z] * uvScale);
+                }
+            }
+        }
+        else
+        {
+            // Standard normalized UVs
+            for (int z = 0; z < length; z++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int i = z * width + x;
+                    uvs[i] = new Vector2(((float)x / (width - 1)) * uvScale, ((float)z / (length - 1)) * uvScale);
+                }
+            }
+        }
+
+        // 3. Build Triangles
         int tris = 0;
         for (int z = 0; z < length - 1; z++)
         {
@@ -180,7 +223,6 @@ public class CustomMeshTerrain : MonoBehaviour
                 int topLeft = (z + 1) * width + x;
                 int topRight = topLeft + 1;
 
-                // Alternate diagonal split per checkerboard quad to prevent ridge lines
                 if ((x + z) % 2 == 0)
                 {
                     triangles[tris + 0] = botLeft;
