@@ -159,7 +159,7 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     - _noise_scale: 15000
-    - _texture_tiling_x: 100
+    - _texture_tiling_x: 105.2
     - _texture_tiling_y: 29.6
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}

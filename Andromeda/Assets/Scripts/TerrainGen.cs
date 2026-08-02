@@ -56,6 +56,11 @@ public class CustomMeshTerrain : MonoBehaviour
     private MeshFilter meshFilter;
     private MeshCollider meshCollider;
 
+    void Start()
+    {
+        seed = Random.Range(-100000000000000, 100000000000000);
+    }
+
     private void OnValidate()
     {
         if (autoUpdate)
