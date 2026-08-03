@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
@@ -109,6 +108,18 @@ public class PlayerMovement : MonoBehaviour
             {
                 footstepInterval = 0.5f;
             }
+
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                TeleportToTerrain();
+            }
         }
+    }
+
+    void TeleportToTerrain()
+    {
+        characterController.enabled = false;
+        transform.position = new Vector3(0f, 200f, 0f);
+        characterController.enabled = true;
     }
 }
