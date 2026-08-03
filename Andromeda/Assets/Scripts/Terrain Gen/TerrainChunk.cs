@@ -126,8 +126,8 @@ public class TerrainChunk : MonoBehaviour
 
                 for (int o = 0; o < safeOctaves; o++)
                 {
-                    float sampleX = (worldX / safeScale) * frequency + octaveOffsets[o].x;
-                    float sampleY = (worldZ / safeScale) * frequency + octaveOffsets[o].y;
+                    float sampleX = ((worldX + 0.1f) / safeScale) * frequency + octaveOffsets[o].x;
+                    float sampleY = ((worldZ + 0.1f) / safeScale) * frequency + octaveOffsets[o].y;
 
                     baseNoise += Mathf.PerlinNoise(sampleX, sampleY) * amplitude;
                     maxPossibleHeight += amplitude;

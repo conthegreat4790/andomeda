@@ -100,7 +100,7 @@ public class ChunkManager : MonoBehaviour
             }
             else
             {
-                DestroyImmediate(child);
+                DestroyImmediate(child, allowDestroyingAssets: true);
             }
         }
 
