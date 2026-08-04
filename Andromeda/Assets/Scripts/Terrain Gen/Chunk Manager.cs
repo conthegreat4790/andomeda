@@ -9,6 +9,10 @@ public class ChunkManager : MonoBehaviour
     [SerializeField] private int chunkSize = 64;
     [SerializeField] private float maxViewDistance = 250f;
 
+    [Header("Material Pool for Randomization")]
+    [Tooltip("Add all your materials here. Each preset will get a random material assigned from this list.")]
+    [SerializeField] private List<Material> materialPool = new List<Material>();
+
     [Header("Base Chunk Setup")]
     [SerializeField] private bool previewBaseChunkInEditor = true;
     [SerializeField] private bool keepBaseChunkLoadedAtRuntime = true;
@@ -75,14 +79,41 @@ public class ChunkManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Picks a random material from the materialPool for each terrain preset.
+    /// </summary>
+    public void RandomizePresetMaterials()
+    {
+        if (materialPool == null || materialPool.Count == 0)
+        {
+            Debug.LogWarning("ChunkManager: Material Pool is empty! Add materials to the list in the Inspector.");
+            return;
+        }
+
+        // Assign a random material from the pool to each preset
+        terrainPreset1.terrainMaterial = materialPool[Random.Range(0, materialPool.Count)];
+        terrainPreset2.terrainMaterial = materialPool[Random.Range(0, materialPool.Count)];
+        terrainPreset3.terrainMaterial = materialPool[Random.Range(0, materialPool.Count)];
+    }
+
+    /// <summary>
+    /// Call this function from another script (or button) to begin terrain generation.
+    /// </summary>
     public void StartGeneratingTerrain()
     {
+        // Randomize materials for presets before spawning terrain
+        RandomizePresetMaterials();
+
         TerrainChunkSettings activeSettings = GetActiveSettings();
+
         if (activeSettings.terrainMaterial == null)
         {
             Debug.LogError($"ChunkManager: Terrain Material is missing on Preset {activeTerrainType}!");
             return;
         }
+
+        activeSettings.seed = Random.Range(-2147483647, 2147483647);
+        activeTerrainType = Random.Range(1, 3);
 
         ClearAllChunks();
 
@@ -101,6 +132,9 @@ public class ChunkManager : MonoBehaviour
         UpdateVisibleChunks();
     }
 
+    /// <summary>
+    /// Call this if you need to switch terrain types on the fly during runtime.
+    /// </summary>
     public void SetActiveTerrainType(int typeIndex)
     {
         activeTerrainType = Mathf.Clamp(typeIndex, 1, 3);
@@ -114,6 +148,17 @@ public class ChunkManager : MonoBehaviour
     {
         isInitialized = false;
         ClearAllChunks();
+    }
+
+    // --- Context Button for Editor Randomization ---
+    [ContextMenu("Randomize Materials (Editor)")]
+    public void RandomizeMaterialsInEditor()
+    {
+        RandomizePresetMaterials();
+        if (!Application.isPlaying && previewBaseChunkInEditor)
+        {
+            UpdateEditorBaseChunk();
+        }
     }
 
     // --- EDITOR PREVIEW LOGIC ---
