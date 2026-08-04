@@ -7,17 +7,19 @@ public class ChunkManager : MonoBehaviour
     [Header("Core Setup")]
     public Transform player;
     public Material terrainMaterial;
-    public int chunkSize = 64; // Size of each chunk in Unity world units
+    public int chunkSize = 64; 
     public float maxViewDistance = 250f;
 
     [Header("Base Chunk Setup")]
-    [Tooltip("If true, chunk (0,0) will auto-generate and update live in the Editor so you can preview noise settings.")]
     public bool previewBaseChunkInEditor = true;
     public bool keepBaseChunkLoadedAtRuntime = true;
     public Vector2 baseChunkCoord = Vector2.zero;
 
     [Header("Terrain Generation Dials")]
     public TerrainChunkSettings terrainSettings;
+
+    // Control Flag
+    private bool isInitialized = false;
 
     private Dictionary<Vector2, TerrainChunk> chunkDictionary = new Dictionary<Vector2, TerrainChunk>();
     private List<TerrainChunk> visibleChunks = new List<TerrainChunk>();
@@ -28,7 +30,6 @@ public class ChunkManager : MonoBehaviour
         // Live preview ONLY in Edit mode
         if (!Application.isPlaying && previewBaseChunkInEditor)
         {
-            // Delay call to prevent Unity Editor execution loops
             UnityEditor.EditorApplication.delayCall += UpdateEditorBaseChunk;
         }
     }
@@ -37,18 +38,18 @@ public class ChunkManager : MonoBehaviour
     {
         if (Application.isPlaying)
         {
-            // Clean out any editor-preview objects before starting runtime generation
+            // Clear editor preview chunks on play start
             ClearAllChunks();
-            UpdateVisibleChunks();
+            isInitialized = false; // Waiting for manual trigger call
         }
     }
 
     private void Update()
     {
-        // Only run full world streaming during active Play Mode
         if (!Application.isPlaying) return;
 
-        if (player == null) return;
+        // Only stream chunks after StartGeneratingTerrain() has been called
+        if (!isInitialized || player == null) return;
 
         int currentChunkX = Mathf.FloorToInt(player.position.x / chunkSize);
         int currentChunkZ = Mathf.FloorToInt(player.position.z / chunkSize);
@@ -62,12 +63,59 @@ public class ChunkManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Call this function from another script or event to begin terrain generation.
+    /// It generates the base chunk first and starts streaming chunks around the player.
+    /// </summary>
+    public void StartGeneratingTerrain()
+    {
+        if (terrainMaterial == null)
+        {
+            Debug.LogError("ChunkManager: Terrain Material is missing!");
+            return;
+        }
+
+        // Clean out any leftover preview chunks
+        ClearAllChunks();
+
+        // Calculate initial player chunk position
+        if (player != null)
+        {
+            int currentChunkX = Mathf.FloorToInt(player.position.x / chunkSize);
+            int currentChunkZ = Mathf.FloorToInt(player.position.z / chunkSize);
+            currentChunkCoord = newChunkCoord(currentChunkX, currentChunkZ);
+        }
+        else
+        {
+            currentChunkCoord = baseChunkCoord;
+        }
+
+        // Enable runtime streaming
+        isInitialized = true;
+
+        // Immediately generate base chunk and visible surrounding chunks
+        UpdateVisibleChunks();
+    }
+
+    /// <summary>
+    /// Optional: Call this if you want to pause terrain streaming or reset terrain generation.
+    /// </summary>
+    public void StopGeneratingTerrain()
+    {
+        isInitialized = false;
+        ClearAllChunks();
+    }
+
+    private Vector2 newChunkCoord(int x, int z)
+    {
+        return new Vector2(x, z);
+    }
+
     // --- EDITOR PREVIEW LOGIC ---
     private void UpdateEditorBaseChunk()
     {
         if (this == null || terrainMaterial == null || Application.isPlaying) return;
 
-        // Ensure we only have the base chunk present in the scene hierarchy while editing
         TerrainChunk baseChunk = GetComponentInChildren<TerrainChunk>();
 
         if (baseChunk == null)
@@ -100,7 +148,7 @@ public class ChunkManager : MonoBehaviour
             }
             else
             {
-                DestroyImmediate(child, allowDestroyingAssets: true);
+                DestroyImmediate(child, true);
             }
         }
 
@@ -120,8 +168,8 @@ public class ChunkManager : MonoBehaviour
         {
             if (visibleChunks[i] == null) continue;
 
-            bool isBase = keepBaseChunkLoadedAtRuntime &&
-                          (visibleChunks[i].transform.position.x == baseChunkCoord.x * chunkSize) &&
+            bool isBase = keepBaseChunkLoadedAtRuntime && 
+                          (visibleChunks[i].transform.position.x == baseChunkCoord.x * chunkSize) && 
                           (visibleChunks[i].transform.position.z == baseChunkCoord.y * chunkSize);
 
             visibleChunks[i].UpdateChunkVisibility(targetPos, maxViewDistance, isBase);
