@@ -12,19 +12,19 @@ public class TerrainChunk : MonoBehaviour
     private int chunkSize = 64;
     private Bounds bounds;
 
-    public void Initialize(Vector2 coord, int size, Material material, TerrainChunkSettings chunkSettings)
+    public void Initialize(Vector2 coord, int size, TerrainChunkSettings chunkSettings)
     {
         chunkCoord = coord;
-        chunkSize = Mathf.Max(size, 4); // Prevent 0 size
+        chunkSize = Mathf.Max(size, 4);
         settings = chunkSettings;
 
         meshFilter = GetComponent<MeshFilter>();
         meshRenderer = GetComponent<MeshRenderer>();
         meshCollider = GetComponent<MeshCollider>();
 
-        if (meshRenderer != null && material != null)
+        if (meshRenderer != null && settings != null && settings.terrainMaterial != null)
         {
-            meshRenderer.material = material;
+            meshRenderer.material = settings.terrainMaterial;
         }
 
         Vector3 position = new Vector3(coord.x * chunkSize, 0, coord.y * chunkSize);
@@ -39,6 +39,12 @@ public class TerrainChunk : MonoBehaviour
     public void RebuildMesh(TerrainChunkSettings newSettings)
     {
         settings = newSettings;
+
+        if (meshRenderer != null && settings != null && settings.terrainMaterial != null)
+        {
+            meshRenderer.material = settings.terrainMaterial;
+        }
+
         GenerateChunkMesh(1);
     }
 
@@ -92,14 +98,16 @@ public class TerrainChunk : MonoBehaviour
         Vector2[] octaveOffsets = new Vector2[safeOctaves];
         for (int i = 0; i < safeOctaves; i++)
         {
-            octaveOffsets[i] = new Vector2(prng.Next(-100000, 100000) + settings.offset.x, prng.Next(-100000, 100000) + settings.offset.y);
+            octaveOffsets[i] = new Vector2(
+                prng.Next(-9999, 9999) + settings.offset.x,
+                prng.Next(-9999, 9999) + settings.offset.y
+            );
         }
 
-        Vector2 elevOffset = new Vector2(prng.Next(-100000, 100000), prng.Next(-100000, 100000)) + settings.offset;
-        Vector2 flatOffset = new Vector2(prng.Next(-100000, 100000), prng.Next(-100000, 100000)) + settings.offset;
-        Vector2 mtnOffset = new Vector2(prng.Next(-100000, 100000), prng.Next(-100000, 100000)) + settings.offset;
+        Vector2 elevOffset = new Vector2(prng.Next(-9999, 9999), prng.Next(-9999, 9999)) + settings.offset;
+        Vector2 flatOffset = new Vector2(prng.Next(-9999, 9999), prng.Next(-9999, 9999)) + settings.offset;
+        Vector2 mtnOffset = new Vector2(prng.Next(-9999, 9999), prng.Next(-9999, 9999)) + settings.offset;
 
-        // 1. Calculate Vertices
         for (int z = 0; z < numVerticesAxis; z++)
         {
             for (int x = 0; x < numVerticesAxis; x++)
@@ -112,13 +120,9 @@ public class TerrainChunk : MonoBehaviour
                 float worldX = transform.position.x + localX;
                 float worldZ = transform.position.z + localZ;
 
-                // Absolute sanity checks for coordinates
                 if (float.IsNaN(localX) || float.IsInfinity(localX)) localX = 0f;
                 if (float.IsNaN(localZ) || float.IsInfinity(localZ)) localZ = 0f;
-                if (float.IsNaN(worldX) || float.IsInfinity(worldX)) worldX = 0f;
-                if (float.IsNaN(worldZ) || float.IsInfinity(worldZ)) worldZ = 0f;
 
-                // --- Base Noise ---
                 float amplitude = 1;
                 float frequency = 1;
                 float baseNoise = 0;
@@ -137,7 +141,6 @@ public class TerrainChunk : MonoBehaviour
 
                 float normalizedBase = maxPossibleHeight > 0 ? Mathf.Clamp01(baseNoise / maxPossibleHeight) : 0f;
 
-                // --- Flattening & Elevation ---
                 float flattenMask = Mathf.Clamp01(Mathf.PerlinNoise((worldX * settings.flattenFrequency) + flatOffset.x, (worldZ * settings.flattenFrequency) + flatOffset.y));
                 float flattenedBase = Mathf.Lerp(normalizedBase, 0f, flattenMask * settings.flattenAmount);
 
@@ -147,7 +150,6 @@ public class TerrainChunk : MonoBehaviour
                 float evaluatedCurve = (settings.heightCurve != null && settings.heightCurve.length > 0) ? settings.heightCurve.Evaluate(finalNormalizedHeight) : finalNormalizedHeight;
                 float yHeight = evaluatedCurve * settings.heightMultiplier;
 
-                // --- Mountain Generator ---
                 if (settings.enableMountains)
                 {
                     float mountainMask = Mathf.Clamp01(Mathf.PerlinNoise((worldX * settings.mountainFrequency) + mtnOffset.x, (worldZ * settings.mountainFrequency) + mtnOffset.y));
@@ -163,7 +165,6 @@ public class TerrainChunk : MonoBehaviour
             }
         }
 
-        // 2. Build Triangles
         int tris = 0;
         for (int z = 0; z < numVerticesAxis - 1; z++)
         {
@@ -202,8 +203,10 @@ public class TerrainChunk : MonoBehaviour
         mesh.triangles = triangles;
         mesh.uv = uvs;
         mesh.tangents = tangents;
+
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
+        mesh.RecalculateTangents();
 
         if (meshFilter != null) meshFilter.sharedMesh = mesh;
         if (meshCollider != null) meshCollider.sharedMesh = mesh;
@@ -213,6 +216,9 @@ public class TerrainChunk : MonoBehaviour
 [System.Serializable]
 public class TerrainChunkSettings
 {
+    [Header("Visual Material")]
+    public Material terrainMaterial;
+
     [Header("Base Elevation Dials")]
     public int seed = 42;
     public float heightMultiplier = 25f;

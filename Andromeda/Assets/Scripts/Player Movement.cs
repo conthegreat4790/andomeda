@@ -6,6 +6,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     public Camera playerCamera;
+    public ChunkManager chunkManager;
     public float walkSpeed = 6f;
     public float runSpeed = 12f;
     public float jumpPower = 7f;
@@ -113,6 +114,11 @@ public class PlayerMovement : MonoBehaviour
             {
                 TeleportToTerrain();
             }
+        }
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            chunkManager.StartGeneratingTerrain();
         }
     }
 
