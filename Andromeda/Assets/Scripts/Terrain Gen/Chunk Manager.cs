@@ -105,11 +105,15 @@ public class ChunkManager : MonoBehaviour
         RandomizePresetMaterials();
 
         TerrainChunkSettings activeSettings = GetActiveSettings();
+
         if (activeSettings.terrainMaterial == null)
         {
             Debug.LogError($"ChunkManager: Terrain Material is missing on Preset {activeTerrainType}!");
             return;
         }
+
+        activeSettings.seed = Random.Range(-2147483647, 2147483647);
+        activeTerrainType = Random.Range(1, 3);
 
         ClearAllChunks();
 
