@@ -216,8 +216,9 @@ public class TerrainChunk : MonoBehaviour
 [System.Serializable]
 public class TerrainChunkSettings
 {
-    [Header("Visual Material")]
+    [Header("Randomization Types")]
     public Material terrainMaterial;
+    public string planetType;
 
     [Header("Base Elevation Dials")]
     public int seed = 42;
