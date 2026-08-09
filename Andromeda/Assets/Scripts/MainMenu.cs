@@ -4,124 +4,56 @@ using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
 {
-    [FormerlySerializedAs("pauseMenu")]
+    public GameObject escapeMenu;
     public GameObject pausePanel;
     public GameObject optionsPanel;
     public bool isMenuActive;
-    public AudioSource menuOpenCloseSound;
-    public Button optionsButton;
-    public Button exitButton;
-
-    private void Awake()
-    {
-        if (optionsButton != null)
-        {
-            optionsButton.onClick.AddListener(OpenOptions);
-        }
-    }
-
-    private void Start()
-    {
-        ShowPausePanel(false);
-    }
-
-    private void OnDestroy()
-    {
-        if (optionsButton != null)
-        {
-            optionsButton.onClick.RemoveListener(OpenOptions);
-        }
-    }
+    public string currentMenu;
 
     private void Update()
     {
-        if (!Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape) && !isMenuActive)
         {
-            return;
+            escapeMenu.SetActive(true);
+            isMenuActive = true;
+
+            CursorLockManager.UnlockCursor();
+        }
+        else if (Input.GetKeyDown(KeyCode.Escape) && isMenuActive)
+        {
+            if (currentMenu == "options")
+            {
+                currentMenu = "top layer pause";
+            }
+
+            if (currentMenu == "top layer pause")
+            {
+                escapeMenu.SetActive(false);
+                isMenuActive = false;
+
+                CursorLockManager.LockCursor();
+            }
         }
 
-        if (optionsPanel != null && optionsPanel.activeSelf)
-        {
-            ShowPausePanel();
-        }
-        else
-        {
-            TogglePausePanel();
-        }
-
-        PlayMenuSound();
-    }
-
-    public void OpenOptions()
-    {
-        if (!isMenuActive || optionsPanel == null)
-        {
-            return;
-        }
-
-        if (pausePanel != null)
-        {
-            pausePanel.SetActive(false);
-        }
-
-        optionsPanel.SetActive(true);
-        CursorLockManager.UnlockCursor();
-    }
-
-    public void ShowPausePanel(bool playSound = true)
-    {
-        if (pausePanel != null)
-        {
-            pausePanel.SetActive(true);
-        }
-
-        if (optionsPanel != null)
-        {
-            optionsPanel.SetActive(false);
-        }
-
-        isMenuActive = true;
-        CursorLockManager.UnlockCursor();
-
-        if (playSound)
-        {
-            PlayMenuSound();
-        }
-    }
-
-    public void CloseMenus()
-    {
-        if (pausePanel != null)
-        {
-            pausePanel.SetActive(false);
-        }
-
-        if (optionsPanel != null)
-        {
-            optionsPanel.SetActive(false);
-        }
-
-        isMenuActive = false;
-        CursorLockManager.LockCursor();
-    }
-
-    public void TogglePausePanel()
-    {
         if (isMenuActive)
         {
-            CloseMenus();
-        }
-        else
-        {
-            ShowPausePanel();
+            if (currentMenu == "top layer pause")
+            {
+                escapeMenu.SetActive(true);
+                pausePanel.SetActive(true);
+                optionsPanel.SetActive(false);
+            }
+            else if (currentMenu == "options")
+            {
+                escapeMenu.SetActive(true);
+                optionsPanel.SetActive(true);
+                pausePanel.SetActive(false);
+            }
         }
     }
 
-    private void PlayMenuSound()
+    public void ClickMenuButton(string input)
     {
-        if (menuOpenCloseSound != null && menuOpenCloseSound.clip != null)
-        {
-            menuOpenCloseSound.PlayOneShot(menuOpenCloseSound.clip);
-        }
+        currentMenu = input;
     }
 }

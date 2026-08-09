@@ -9,9 +9,11 @@ public class ChunkManager : MonoBehaviour
     [SerializeField] private int chunkSize = 64;
     [SerializeField] private float maxViewDistance = 250f;
 
-    [Header("Material Pool for Randomization")]
-    [Tooltip("Add all your materials here. Each preset will get a random material assigned from this list.")]
-    [SerializeField] private List<Material> materialPool = new List<Material>();
+    [Header("Pools For Randomization")]
+    [SerializeField] private List<Material> barrenMaterialPool = new List<Material>();
+    [SerializeField] private List<Material> wetMaterialPool = new List<Material>();
+    [SerializeField] private List<Material> habitableMaterialPool = new List<Material>();
+    [SerializeField] private List<string> planetTypePool = new List<string>();
 
     [Header("Base Chunk Setup")]
     [SerializeField] private bool previewBaseChunkInEditor = true;
@@ -84,16 +86,31 @@ public class ChunkManager : MonoBehaviour
     /// </summary>
     public void RandomizePresetMaterials()
     {
-        if (materialPool == null || materialPool.Count == 0)
+        TerrainChunkSettings[] terrainSettingsArray = { terrainPreset1, terrainPreset2, terrainPreset3 };
+
+        foreach (TerrainChunkSettings tcss in terrainSettingsArray)
         {
-            Debug.LogWarning("ChunkManager: Material Pool is empty! Add materials to the list in the Inspector.");
-            return;
+            tcss.planetType = planetTypePool[Random.Range(0, planetTypePool.Count)];
+            tcss.seed = (int)Random.Range(-2147483648, 2147483648);
         }
 
-        // Assign a random material from the pool to each preset
-        terrainPreset1.terrainMaterial = materialPool[Random.Range(0, materialPool.Count)];
-        terrainPreset2.terrainMaterial = materialPool[Random.Range(0, materialPool.Count)];
-        terrainPreset3.terrainMaterial = materialPool[Random.Range(0, materialPool.Count)];
+        foreach (TerrainChunkSettings tcs in terrainSettingsArray)
+        {
+            if (tcs.planetType == "Barren")
+            {
+                tcs.terrainMaterial = barrenMaterialPool[Random.Range(0, barrenMaterialPool.Count)];
+            }
+
+            if (tcs.planetType == "Wet")
+            {
+                tcs.terrainMaterial = wetMaterialPool[Random.Range(0, wetMaterialPool.Count)];
+            }
+
+            if (tcs.planetType == "Habitable")
+            {
+                tcs.terrainMaterial = habitableMaterialPool[Random.Range(0, habitableMaterialPool.Count)];
+            }
+        }
     }
 
     /// <summary>

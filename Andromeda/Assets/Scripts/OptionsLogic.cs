@@ -8,10 +8,6 @@ public class OptionsLogic : MonoBehaviour
     void Update()
     {
         AudioListener.volume = currentVolume / 100f;
-    }
-
-    public void OnValueChangedVolumeSlider()
-    {
         currentVolume = volumeSlider.value;
     }
 }
