@@ -26,6 +26,11 @@ public class RaycastManager : MonoBehaviour
                 if (hit.collider.gameObject.name == "Enter Ship Trigger")
                 {
                     interactTextObjectText.text = "Enter Ship (E)";
+
+                    if (Input.GetKey(KeyCode.E))
+                    {
+
+                    }
                 }
             }
             else

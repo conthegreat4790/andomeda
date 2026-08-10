@@ -7,6 +7,8 @@ public class TerrainChunk : MonoBehaviour
     private MeshRenderer meshRenderer;
     private MeshCollider meshCollider;
     private TerrainChunkSettings settings;
+    private string[] alphabet = { "U", "D", "X", "C", "V", "K", "L", "H", "J", "S", "A", "P", "O", "Y", "Z", "R", "E", "W" };
+    private string starName;
 
     private Vector2 chunkCoord;
     private int chunkSize = 64;
@@ -210,6 +212,11 @@ public class TerrainChunk : MonoBehaviour
 
         if (meshFilter != null) meshFilter.sharedMesh = mesh;
         if (meshCollider != null) meshCollider.sharedMesh = mesh;
+    }
+
+    void GenerateStarName()
+    {
+
     }
 }
 
