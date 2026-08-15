@@ -3,8 +3,29 @@ using TMPro;
 
 public class ShipUI : MonoBehaviour
 {
-    public string name;
+    public bool inShipMenu;
+    public GameObject pixelationEffect;
+    public GameObject shipUiObject;
+    public GameObject shipUiPhysicalObject;
+    public string bodyName;
     public TMP_Text starNameText;
+
+    void Update()
+    {
+        if (inShipMenu)
+        {
+            pixelationEffect.SetActive(false);
+            shipUiObject.SetActive(true);
+            shipUiPhysicalObject.SetActive(true);
+
+        }
+        else
+        {
+            pixelationEffect.SetActive(true);
+            shipUiObject.SetActive(false);
+            shipUiPhysicalObject.SetActive(false);
+        }
+    }
 
     public string GenerateStarName()
     {
@@ -46,12 +67,12 @@ public class ShipUI : MonoBehaviour
     [ContextMenu("Star Name")]
     void GetStarName()
     {
-        name = GenerateStarName();
+        bodyName = GenerateStarName();
     }
 
     [ContextMenu("Planet Name")]
     void GetPlanetName()
     {
-        name = GeneratePlanetName();
+        bodyName = GeneratePlanetName();
     }
 }

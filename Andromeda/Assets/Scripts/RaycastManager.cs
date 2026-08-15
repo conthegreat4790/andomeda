@@ -7,6 +7,7 @@ using TMPro;
 public class RaycastManager : MonoBehaviour
 {
     public Camera cam;
+    public ShipUI shipUI;
     public GameObject interactText;
     public Animator pointerAnimator;
 
@@ -19,7 +20,7 @@ public class RaycastManager : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, 3f))
         {
-            if (hit.collider.gameObject.tag == "Interactable")
+            if (hit.collider.gameObject.tag == "Interactable" && !shipUI.inShipMenu)
             {
                 Hover();
 
@@ -27,15 +28,17 @@ public class RaycastManager : MonoBehaviour
                 {
                     interactTextObjectText.text = "Enter Ship (E)";
 
-                    if (Input.GetKey(KeyCode.E))
+                    if (Input.GetKeyDown(KeyCode.E))
                     {
-
+                        shipUI.inShipMenu = true;
+                        CursorLockManager.UnlockCursor();
                     }
                 }
             }
             else
             {
                 Unhover();
+                interactTextObjectText.text = "";
             }
         }
         else
@@ -45,14 +48,14 @@ public class RaycastManager : MonoBehaviour
     }
 
     [ContextMenu("Hover")]
-    void Hover()
+    public void Hover()
     {
         pointerAnimator.Play("pointer expand");
         interactText.SetActive(true);
     }
 
     [ContextMenu("Unhover")]
-    void Unhover()
+    public void Unhover()
     {
         pointerAnimator.Play("pointer shrink");
         interactText.SetActive(false);
