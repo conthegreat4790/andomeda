@@ -23,6 +23,7 @@ public class RaycastManager : MonoBehaviour
             if (hit.collider.gameObject.tag == "Interactable" && !shipUI.inShipMenu)
             {
                 Hover();
+                interactText.SetActive(true);
 
                 if (hit.collider.gameObject.name == "Enter Ship Trigger")
                 {
@@ -38,12 +39,14 @@ public class RaycastManager : MonoBehaviour
             else
             {
                 Unhover();
+                interactText.SetActive(false);
                 interactTextObjectText.text = "";
             }
         }
         else
         {
             Unhover();
+            interactText.SetActive(false);
         }
     }
 
@@ -51,13 +54,11 @@ public class RaycastManager : MonoBehaviour
     public void Hover()
     {
         pointerAnimator.Play("pointer expand");
-        interactText.SetActive(true);
     }
 
     [ContextMenu("Unhover")]
     public void Unhover()
     {
         pointerAnimator.Play("pointer shrink");
-        interactText.SetActive(false);
     }
 }
