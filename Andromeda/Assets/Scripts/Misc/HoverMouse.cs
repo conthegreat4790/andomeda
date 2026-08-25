@@ -76,6 +76,13 @@ public class HoverSound : MonoBehaviour, IPointerEnterHandler
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        HoverMouse.Instance?.PlayHoverSound();
+        if (hoverSound != null)
+        {
+            HoverMouse.Instance?.audioSource.PlayOneShot(hoverSound);
+        }
+        else
+        {
+            HoverMouse.Instance?.PlayHoverSound();
+        }
     }
 }
