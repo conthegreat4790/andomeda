@@ -5,7 +5,7 @@ using TMPro;
 
 public class ButtonTemplate : MonoBehaviour
 {
-    [Tooltip("How far the underline will expand (also scales the highlgiht)")]
+    [Tooltip("How far the underline will expand (also scales the highlight)")]
     public float underlineExpansionAmount = 100f;
     [Tooltip("How long the underline expand/collapse animation takes, in seconds")]
     public float underlineAnimationDuration = 0.2f;
