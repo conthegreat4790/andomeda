@@ -9,21 +9,25 @@ public class ShipUI : MonoBehaviour
     public GameObject shipUiPhysicalObject;
     public string bodyName;
     public TMP_Text starNameText;
+    public MainMenu mainMenu;
 
     void Update()
     {
-        if (inShipMenu)
+        if (mainMenu.gameStarted)
         {
-            pixelationEffect.SetActive(false);
-            shipUiObject.SetActive(true);
-            shipUiPhysicalObject.SetActive(true);
+            if (inShipMenu)
+            {
+                pixelationEffect.SetActive(false);
+                shipUiObject.SetActive(true);
+                shipUiPhysicalObject.SetActive(true);
 
-        }
-        else
-        {
-            pixelationEffect.SetActive(true);
-            shipUiObject.SetActive(false);
-            shipUiPhysicalObject.SetActive(false);
+            }
+            else
+            {
+                pixelationEffect.SetActive(true);
+                shipUiObject.SetActive(false);
+                shipUiPhysicalObject.SetActive(false);
+            }
         }
     }
 

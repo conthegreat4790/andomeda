@@ -6,7 +6,7 @@ public class CursorLockManager : MonoBehaviour
 
     void Start()
     {
-        LockCursor();
+        UnlockCursor();
     }
 
     void Update()

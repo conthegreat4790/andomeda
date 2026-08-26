@@ -339,15 +339,35 @@ MonoBehaviour:
   - eventID: 0
     callback:
       m_PersistentCalls:
-        m_Calls: []
+        m_Calls:
+        - m_Target: {fileID: 7720548155914297886}
+          m_TargetAssemblyTypeName: ButtonTemplate, Assembly-CSharp
+          m_MethodName: Hovered
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
   - eventID: 1
     callback:
       m_PersistentCalls:
-        m_Calls: []
-  - eventID: 4
-    callback:
-      m_PersistentCalls:
-        m_Calls: []
+        m_Calls:
+        - m_Target: {fileID: 7720548155914297886}
+          m_TargetAssemblyTypeName: ButtonTemplate, Assembly-CSharp
+          m_MethodName: Unhovered
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!114 &7720548155914297886
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -364,7 +384,7 @@ MonoBehaviour:
   underlineAnimationDuration: 1
   highlightHoverAlpha: 0.1
   highlightIdleAlpha: 0
-  textHoverScale: 1.1
+  textHoverScale: 1.2
   textIdleScale: 1
   highlight: {fileID: 8420112074443862340}
   underline: {fileID: 4008592295157582869}

@@ -22,17 +22,17 @@ public class ButtonTemplate : MonoBehaviour
     public TMP_Text text;
 
     [ContextMenu("hover")]
-    void Hovered()
+    public void Hovered()
     {
         StopAllCoroutines();
-        StartCoroutine(UnderlineExpand(0f, underlineExpansionAmount, underlineAnimationDuration));
+        StartCoroutine(UnderlineExpand(underline.rectTransform.sizeDelta.x, underlineExpansionAmount, underlineAnimationDuration));
         StartCoroutine(HighlightFade(highlight.color.a, highlightHoverAlpha, underlineAnimationDuration));
         StartCoroutine(TextScale(text.rectTransform.localScale.x, textHoverScale, underlineAnimationDuration));
         highlight.rectTransform.sizeDelta = new Vector2(underlineExpansionAmount, highlight.rectTransform.sizeDelta.y);
     }
 
     [ContextMenu("unhover")]
-    void Unhovered()
+    public void Unhovered()
     {
         StopAllCoroutines();
         StartCoroutine(UnderlineExpand(underline.rectTransform.sizeDelta.x, 0f, underlineAnimationDuration));
