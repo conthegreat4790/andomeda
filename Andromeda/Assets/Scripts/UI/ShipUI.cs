@@ -8,6 +8,7 @@ public class ShipUI : MonoBehaviour
     public GameObject pixelationEffect;
     public GameObject shipUiObject;
     public GameObject shipUiPhysicalObject;
+    public GameObject startRoom;
     public string bodyName;
     public TMP_Text starNameText;
     public MainMenu mainMenu;
@@ -86,9 +87,13 @@ public class ShipUI : MonoBehaviour
     public void TravelToPlanet(int typee)
     {
         chunkManager.SetTerrainType(typee);
+        chunkManager.UpdateChunksPublic();
+        chunkManager.ClearChunksPublic();
         chunkManager.StartGeneratingTerrain();
 
+
         inShipMenu = false;
+        startRoom.SetActive(false);
         playerMovement.TeleportToTerrain();
     }
 

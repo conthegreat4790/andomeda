@@ -226,6 +226,16 @@ public class ChunkManager : MonoBehaviour
         visibleChunks.Clear();
     }
 
+    public void ClearChunksPublic()
+    {
+        ClearAllChunks();
+    }
+
+    public void UpdateChunksPublic()
+    {
+        UpdateVisibleChunks();
+    }
+
     // --- RUNTIME GENERATION LOGIC ---
     private void UpdateVisibleChunks()
     {
