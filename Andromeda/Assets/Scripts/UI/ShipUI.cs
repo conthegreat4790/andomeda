@@ -94,6 +94,7 @@ public class ShipUI : MonoBehaviour
 
         inShipMenu = false;
         startRoom.SetActive(false);
+        CursorLockManager.LockCursor();
         playerMovement.TeleportToTerrain();
     }
 
