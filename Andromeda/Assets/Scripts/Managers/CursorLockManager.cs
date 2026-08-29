@@ -3,6 +3,7 @@ using UnityEngine;
 public class CursorLockManager : MonoBehaviour
 {
     public GameObject pointer;
+    public bool cursorLocked;
 
     void Start()
     {
@@ -14,10 +15,12 @@ public class CursorLockManager : MonoBehaviour
         if (Cursor.lockState == CursorLockMode.Locked)
         {
             pointer.transform.position = new Vector2(Screen.width / 2f, Screen.height / 2f);
+            cursorLocked = true;
         }
         else
         {
             pointer.transform.position = Input.mousePosition;
+            cursorLocked = false;
         }
     }
 

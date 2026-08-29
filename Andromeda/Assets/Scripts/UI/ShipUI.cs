@@ -4,12 +4,15 @@ using TMPro;
 public class ShipUI : MonoBehaviour
 {
     public bool inShipMenu;
+    public bool terrainGenStarted;
     public GameObject pixelationEffect;
     public GameObject shipUiObject;
     public GameObject shipUiPhysicalObject;
     public string bodyName;
     public TMP_Text starNameText;
     public MainMenu mainMenu;
+    public ChunkManager chunkManager;
+    public PlayerMovement playerMovement;
 
     void Update()
     {
@@ -78,5 +81,18 @@ public class ShipUI : MonoBehaviour
     void GetPlanetName()
     {
         bodyName = GeneratePlanetName();
+    }
+
+    public void TravelToPlanet(int typee)
+    {
+        chunkManager.SetTerrainType(typee);
+
+        if (!terrainGenStarted)
+        {
+            chunkManager.StartGeneratingTerrain();
+            terrainGenStarted = true;
+        }
+
+        playerMovement.TeleportToTerrain();
     }
 }

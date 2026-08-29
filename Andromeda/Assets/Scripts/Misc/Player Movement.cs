@@ -109,20 +109,10 @@ public class PlayerMovement : MonoBehaviour
             {
                 footstepInterval = 0.5f;
             }
-
-            if (Input.GetKeyDown(KeyCode.F))
-            {
-                TeleportToTerrain();
-            }
-        }
-
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            chunkManager.StartGeneratingTerrain();
         }
     }
 
-    void TeleportToTerrain()
+    public void TeleportToTerrain()
     {
         characterController.enabled = false;
         transform.position = new Vector3(0f, 200f, 0f);

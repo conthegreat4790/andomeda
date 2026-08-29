@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Net;
 using UnityEngine;
 
 [ExecuteInEditMode]
@@ -35,6 +36,17 @@ public class ChunkManager : MonoBehaviour
     private Dictionary<Vector2, TerrainChunk> chunkDictionary = new Dictionary<Vector2, TerrainChunk>();
     private List<TerrainChunk> visibleChunks = new List<TerrainChunk>();
     private Vector2 currentChunkCoord;
+
+    public void SetTerrainType(int type)
+    {
+        if (type > 3 || type < 1)
+        {
+            Debug.LogError("Terrain type out of range");
+            return;
+        }
+
+        activeTerrainType = type;
+    }
 
     public TerrainChunkSettings GetActiveSettings()
     {
