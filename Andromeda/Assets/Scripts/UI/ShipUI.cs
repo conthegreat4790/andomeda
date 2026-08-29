@@ -86,13 +86,10 @@ public class ShipUI : MonoBehaviour
     public void TravelToPlanet(int typee)
     {
         chunkManager.SetTerrainType(typee);
+        chunkManager.StartGeneratingTerrain();
 
-        if (!terrainGenStarted)
-        {
-            chunkManager.StartGeneratingTerrain();
-            terrainGenStarted = true;
-        }
-
+        inShipMenu = false;
         playerMovement.TeleportToTerrain();
     }
+
 }

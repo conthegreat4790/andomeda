@@ -161,18 +161,6 @@ public class ChunkManager : MonoBehaviour
         UpdateVisibleChunks();
     }
 
-    /// <summary>
-    /// Call this if you need to switch terrain types on the fly during runtime.
-    /// </summary>
-    public void SetActiveTerrainType(int typeIndex)
-    {
-        activeTerrainType = Mathf.Clamp(typeIndex, 1, 3);
-        if (isInitialized)
-        {
-            StartGeneratingTerrain();
-        }
-    }
-
     public void StopGeneratingTerrain()
     {
         isInitialized = false;
