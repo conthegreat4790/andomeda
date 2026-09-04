@@ -26,6 +26,10 @@ public class MusicManager : MonoBehaviour
             musicManager.clip = musicClips[0];
             musicManager.Play();
         }
+        if (!mainMenu.activeSelf && musicManager.isPlaying)
+        {
+            musicManager.Stop();
+        }
     }
     void ToggleMusic()
 {
