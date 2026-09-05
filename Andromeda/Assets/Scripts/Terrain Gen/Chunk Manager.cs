@@ -37,6 +37,8 @@ public class ChunkManager : MonoBehaviour
     private List<TerrainChunk> visibleChunks = new List<TerrainChunk>();
     private Vector2 currentChunkCoord;
 
+    public TerrainChunkSettings[] terrainSettingsArrayPublic;
+
     public void SetTerrainType(int type)
     {
         if (type > 3 || type < 1)

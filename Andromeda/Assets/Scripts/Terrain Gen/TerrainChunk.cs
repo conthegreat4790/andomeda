@@ -1,8 +1,13 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
 public class TerrainChunk : MonoBehaviour
 {
+    // Extra vertical clearance added above/below the chunk's expected height range when
+    // raycasting down to find the terrain surface for tree placement.
+    private const float TreeRaycastClearance = 50f;
+
     private MeshFilter meshFilter;
     private MeshRenderer meshRenderer;
     private MeshCollider meshCollider;
@@ -11,6 +16,8 @@ public class TerrainChunk : MonoBehaviour
     private Vector2 chunkCoord;
     private int chunkSize = 64;
     private Bounds bounds;
+
+    private readonly List<GameObject> spawnedTrees = new List<GameObject>();
 
     public void Initialize(Vector2 coord, int size, TerrainChunkSettings chunkSettings)
     {
@@ -210,6 +217,65 @@ public class TerrainChunk : MonoBehaviour
 
         if (meshFilter != null) meshFilter.sharedMesh = mesh;
         if (meshCollider != null) meshCollider.sharedMesh = mesh;
+
+        GenerateTrees();
+    }
+
+    /// <summary>
+    /// Spawns trees on top of this chunk's freshly generated terrain surface and parents
+    /// each one to this chunk. Only runs during play mode so editor previews stay clean.
+    /// </summary>
+    private void GenerateTrees()
+    {
+        ClearTrees();
+
+        if (!Application.isPlaying) return;
+        if (settings == null || settings.treePrefab == null || settings.treeFrequency <= 0f) return;
+
+        float treeGridSpacing = Mathf.Max(settings.treeSpacing, 1f);
+        System.Random treeRandom = new System.Random(settings.seed ^ (chunkCoord.GetHashCode()));
+        float maxRayHeight = bounds.size.y + TreeRaycastClearance;
+
+        for (float gridZ = 0f; gridZ < chunkSize; gridZ += treeGridSpacing)
+        {
+            for (float gridX = 0f; gridX < chunkSize; gridX += treeGridSpacing)
+            {
+                if (treeRandom.NextDouble() > settings.treeFrequency) continue;
+
+                float jitterX = (float)(treeRandom.NextDouble() - 0.5) * treeGridSpacing;
+                float jitterZ = (float)(treeRandom.NextDouble() - 0.5) * treeGridSpacing;
+
+                float localX = Mathf.Clamp(gridX + jitterX, 0f, chunkSize);
+                float localZ = Mathf.Clamp(gridZ + jitterZ, 0f, chunkSize);
+
+                Vector3 rayOrigin = transform.position + new Vector3(localX, maxRayHeight, localZ);
+                Ray downRay = new Ray(rayOrigin, Vector3.down);
+
+                if (meshCollider.Raycast(downRay, out RaycastHit hit, maxRayHeight + TreeRaycastClearance))
+                {
+                    GameObject tree = Instantiate(settings.treePrefab, hit.point, Quaternion.identity, transform);
+                    tree.name = $"Tree_{spawnedTrees.Count}";
+                    spawnedTrees.Add(tree);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Destroys every tree previously spawned on this chunk. Called before regenerating
+    /// trees so chunks can be rebuilt without leaving orphaned tree instances.
+    /// </summary>
+    private void ClearTrees()
+    {
+        foreach (GameObject tree in spawnedTrees)
+        {
+            if (tree != null)
+            {
+                if (Application.isPlaying) Destroy(tree);
+                else DestroyImmediate(tree);
+            }
+        }
+        spawnedTrees.Clear();
     }
 }
 
@@ -243,4 +309,10 @@ public class TerrainChunkSettings
     public float uvScale = 0.1f;
     public Vector2 offset = Vector2.zero;
     public AnimationCurve heightCurve = AnimationCurve.Linear(0, 0, 1, 1);
+
+    [Header("Tree Generation")]
+    // Assign a prefab representing a single tree and tune spawn density/spacing.
+    public GameObject treePrefab;
+    [Range(0f, 1f)] public float treeFrequency = 0.1f;
+    public float treeSpacing = 8f;
 }
